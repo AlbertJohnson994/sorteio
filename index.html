@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Sorteio - Mega Sena & Mega da Virada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .game-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .game-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 111, 0, 0.3);
+        }
+
+        .game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 111, 0, 0.4);
+        }
+
+        .game-btn.active {
+            background: linear-gradient(135deg, #00c853 0%, #64dd17 100%);
+            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+        }
+
+        .game-info {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-info h2 {
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .game-info p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .game-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 15px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .detail-card h3 {
+            color: #1a237e;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .detail-card p {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+        .draw-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .draw-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+        }
+
+        .control-btn.secondary {
+            background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%);
+            color: white;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .numbers-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            min-height: 100px;
+        }
+
+        .number-ball {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            animation: popIn 0.5s ease-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .mega-sena-ball {
+            background: linear-gradient(135deg, #009688 0%, #4db6ac 100%);
+        }
+
+        .mega-virada-ball {
+            background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+        }
+
+        .statistics {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .statistics h2 {
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #1a237e;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+        .history {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .history h2 {
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .history-item {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .history-numbers {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .history-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .history-date {
+            font-weight: bold;
+            color: #1a237e;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .share-btn.whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .share-btn.copy {
+            background: #2196F3;
+            color: white;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+
+            .game-btn,
+            .control-btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+
+            .number-ball {
+                width: 50px;
+                height: 50px;
+                font-size: 1.4rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-trophy"></i> Sistema de Sorteio</h1>
+            <p>Gere números para Mega Sena e Mega da Virada de forma aleatória e segura</p>
+        </header>
+
+        <div class="game-selector">
+            <button class="game-btn active" id="btn-mega-sena">
+                <i class="fas fa-dice"></i> Mega Sena
+            </button>
+            <button class="game-btn" id="btn-mega-virada">
+                <i class="fas fa-star"></i> Mega da Virada
+            </button>
+        </div>
+
+        <div class="game-info">
+            <h2><i class="fas fa-info-circle"></i> Informações do Jogo</h2>
+            <p id="game-description"></p>
+            <div class="game-details">
+                <div class="detail-card">
+                    <h3><i class="fas fa-hashtag"></i> Números por Jogo</h3>
+                    <p id="numbers-per-game">6 números</p>
+                </div>
+                <div class="detail-card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Premiação Estimada</h3>
+                    <p id="estimated-prize">R$ 5.000.000</p>
+                </div>
+                <div class="detail-card">
+                    <h3><i class="fas fa-calendar-alt"></i> Próximo Sorteio</h3>
+                    <p id="next-draw">Sábado 20:00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="draw-area">
+            <h2 style="color: #1a237e; margin-bottom: 20px;">
+                <i class="fas fa-bullseye"></i> Números Sorteados
+            </h2>
+
+            <div class="draw-controls">
+                <button class="control-btn primary" id="btn-draw">
+                    <i class="fas fa-random"></i> Sortear Números
+                </button>
+                <button class="control-btn secondary" id="btn-clear">
+                    <i class="fas fa-trash-alt"></i> Limpar Sorteio
+                </button>
+                <button class="control-btn" id="btn-quick-draw"
+                    style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
+                    <i class="fas fa-bolt"></i> Sorteio Rápido
+                </button>
+            </div>
+
+            <div class="numbers-container" id="numbers-container">
+                <!-- Números serão inseridos aqui -->
+            </div>
+
+            <div class="share-buttons">
+                <button class="share-btn whatsapp" id="btn-share-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Compartilhar no WhatsApp
+                </button>
+                <button class="share-btn copy" id="btn-copy-numbers">
+                    <i class="fas fa-copy"></i> Copiar Números
+                </button>
+            </div>
+        </div>
+
+        <div class="statistics">
+            <h2><i class="fas fa-chart-bar"></i> Estatísticas</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Sorteios Realizados</h3>
+                    <div class="stat-value" id="total-draws">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Números Mais Sorteados</h3>
+                    <div class="stat-value" id="most-common">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Último Sorteio</h3>
+                    <div class="stat-value" id="last-draw-time">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Combinações Possíveis</h3>
+                    <div class="stat-value" id="total-combinations">50.063.860</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history">
+            <h2><i class="fas fa-history"></i> Histórico de Sorteios</h2>
+            <div class="history-list" id="history-list">
+                <!-- Histórico será inserido aqui -->
+            </div>
+        </div>
+
+        <footer>
+            <p><i class="fas fa-exclamation-circle"></i> Este é um sistema de simulação. Os números gerados não garantem
+                ganhos reais.</p>
+            <p>Jogue com responsabilidade. Maiores de 18 anos.</p>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification">
+        Números copiados para a área de transferência!
+    </div>
+
+    <script>
+        // Configurações dos jogos
+        const GAMES = {
+            'mega-sena': {
+                name: 'Mega Sena',
+                description: 'Escolha 6 números entre 1 e 60. Acertando 6 números você ganha o prêmio principal!',
+                numbersRange: 60,
+                numbersToDraw: 6,
+                colorClass: 'mega-sena-ball',
+                icon: 'fas fa-dice',
+                nextDraw: 'Sábado 20:00',
+                prize: 'R$ 5.000.000',
+                combinations: '50.063.860'
+            },
+            'mega-virada': {
+                name: 'Mega da Virada',
+                description: 'Sorteio especial de fim de ano! Escolha 6 números entre 1 e 60 com prêmio milionário.',
+                numbersRange: 60,
+                numbersToDraw: 6,
+                colorClass: 'mega-virada-ball',
+                icon: 'fas fa-star',
+                nextDraw: '31/12 20:00',
+                prize: 'R$ 300.000.000',
+                combinations: '50.063.860'
+            }
+        };
+
+        // Estado do aplicativo
+        let appState = {
+            currentGame: 'mega-sena',
+            drawnNumbers: [],
+            history: JSON.parse(localStorage.getItem('lotteryHistory')) || [],
+            statistics: JSON.parse(localStorage.getItem('lotteryStats')) || {
+                totalDraws: 0,
+                numberFrequency: {},
+                lastDraw: null
+            }
+        };
+
+        // Elementos DOM
+        const elements = {
+            gameBtns: document.querySelectorAll('.game-btn'),
+            gameDescription: document.getElementById('game-description'),
+            numbersPerGame: document.getElementById('numbers-per-game'),
+            estimatedPrize: document.getElementById('estimated-prize'),
+            nextDraw: document.getElementById('next-draw'),
+            btnDraw: document.getElementById('btn-draw'),
+            btnClear: document.getElementById('btn-clear'),
+            btnQuickDraw: document.getElementById('btn-quick-draw'),
+            numbersContainer: document.getElementById('numbers-container'),
+            totalDraws: document.getElementById('total-draws'),
+            mostCommon: document.getElementById('most-common'),
+            lastDrawTime: document.getElementById('last-draw-time'),
+            totalCombinations: document.getElementById('total-combinations'),
+            historyList: document.getElementById('history-list'),
+            btnShareWhatsapp: document.getElementById('btn-share-whatsapp'),
+            btnCopyNumbers: document.getElementById('btn-copy-numbers'),
+            notification: document.getElementById('notification')
+        };
+
+        // Inicialização
+        function init() {
+            updateGameInfo();
+            updateStatistics();
+            updateHistory();
+            setupEventListeners();
+        }
+
+        // Atualizar informações do jogo
+        function updateGameInfo() {
+            const game = GAMES[appState.currentGame];
+
+            elements.gameDescription.textContent = game.description;
+            elements.numbersPerGame.textContent = `${game.numbersToDraw} números`;
+            elements.estimatedPrize.textContent = game.prize;
+            elements.nextDraw.textContent = game.nextDraw;
+            elements.totalCombinations.textContent = game.combinations;
+
+            // Atualizar botões ativos
+            elements.gameBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.id === `btn-${appState.currentGame.replace('-', '-')}`) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Gerar números aleatórios
+        function generateNumbers() {
+            const game = GAMES[appState.currentGame];
+            const numbers = [];
+
+            while (numbers.length < game.numbersToDraw) {
+                const randomNum = Math.floor(Math.random() * game.numbersRange) + 1;
+                if (!numbers.includes(randomNum)) {
+                    numbers.push(randomNum);
+                }
+            }
+
+            // Ordenar números
+            return numbers.sort((a, b) => a - b);
+        }
+
+        // Exibir números sorteados
+        function displayNumbers(numbers) {
+            elements.numbersContainer.innerHTML = '';
+            const game = GAMES[appState.currentGame];
+
+            numbers.forEach((num, index) => {
+                setTimeout(() => {
+                    const ball = document.createElement('div');
+                    ball.className = `number-ball ${game.colorClass}`;
+                    ball.textContent = num.toString().padStart(2, '0');
+                    ball.style.animationDelay = `${index * 0.1}s`;
+                    elements.numbersContainer.appendChild(ball);
+                }, index * 100);
+            });
+
+            appState.drawnNumbers = numbers;
+        }
+
+        // Salvar sorteio no histórico
+        function saveToHistory(numbers) {
+            const draw = {
+                game: appState.currentGame,
+                numbers: [...numbers],
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleString('pt-BR')
+            };
+
+            appState.history.unshift(draw);
+            if (appState.history.length > 20) {
+                appState.history.pop();
+            }
+
+            // Atualizar estatísticas
+            appState.statistics.totalDraws++;
+            appState.statistics.lastDraw = new Date().toISOString();
+
+            numbers.forEach(num => {
+                appState.statistics.numberFrequency[num] =
+                    (appState.statistics.numberFrequency[num] || 0) + 1;
+            });
+
+            // Salvar no localStorage
+            localStorage.setItem('lotteryHistory', JSON.stringify(appState.history));
+            localStorage.setItem('lotteryStats', JSON.stringify(appState.statistics));
+
+            updateStatistics();
+            updateHistory();
+        }
+
+        // Atualizar estatísticas
+        function updateStatistics() {
+            elements.totalDraws.textContent = appState.statistics.totalDraws;
+            elements.lastDrawTime.textContent = appState.statistics.lastDraw ?
+                new Date(appState.statistics.lastDraw).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) :
+                '-';
+
+            // Encontrar número mais frequente
+            let mostCommon = '-';
+            let maxCount = 0;
+
+            Object.entries(appState.statistics.numberFrequency).forEach(([num, count]) => {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCommon = num.padStart(2, '0');
+                }
+            });
+
+            elements.mostCommon.textContent = mostCommon;
+        }
+
+        // Atualizar histórico
+        function updateHistory() {
+            elements.historyList.innerHTML = '';
+
+            if (appState.history.length === 0) {
+                elements.historyList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum sorteio realizado ainda.</p>';
+                return;
+            }
+
+            appState.history.forEach(draw => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+
+                const numbersDiv = document.createElement('div');
+                numbersDiv.className = 'history-numbers';
+
+                draw.numbers.forEach(num => {
+                    const numSpan = document.createElement('span');
+                    numSpan.className = `history-number ${GAMES[draw.game].colorClass}`;
+                    numSpan.textContent = num.toString().padStart(2, '0');
+                    numbersDiv.appendChild(numSpan);
+                });
+
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'history-date';
+                dateSpan.textContent = draw.date;
+
+                const gameSpan = document.createElement('span');
+                gameSpan.style.color = '#666';
+                gameSpan.textContent = GAMES[draw.game].name;
+
+                item.appendChild(numbersDiv);
+                item.appendChild(dateSpan);
+                item.appendChild(gameSpan);
+                elements.historyList.appendChild(item);
+            });
+        }
+
+        // Mostrar notificação
+        function showNotification(message) {
+            elements.notification.textContent = message;
+            elements.notification.classList.add('show');
+
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Copiar números para área de transferência
+        function copyNumbersToClipboard() {
+            if (appState.drawnNumbers.length === 0) {
+                showNotification('Nenhum número para copiar!');
+                return;
+            }
+
+            const numbersText = appState.drawnNumbers
+                .map(n => n.toString().padStart(2, '0'))
+                .join(' - ');
+
+            navigator.clipboard.writeText(numbersText)
+                .then(() => {
+                    showNotification('Números copiados para a área de transferência!');
+                })
+                .catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    showNotification('Erro ao copiar números.');
+                });
+        }
+
+        // Compartilhar no WhatsApp
+        function shareOnWhatsApp() {
+            if (appState.drawnNumbers.length === 0) {
+                showNotification('Nenhum número para compartilhar!');
+                return;
+            }
+
+            const game = GAMES[appState.currentGame];
+            const numbersText = appState.drawnNumbers
+                .map(n => n.toString().padStart(2, '0'))
+                .join(', ');
+
+            const message = `🎰 *${game.name}* 🎰\n\n` +
+                `Números sorteados: ${numbersText}\n\n` +
+                `Data: ${new Date().toLocaleDateString('pt-BR')}\n` +
+                `Sistema de Sorteio - Gerado aleatoriamente`;
+
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Botões de seleção de jogo
+            elements.gameBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const gameId = btn.id.replace('btn-', '').replace('-', '-');
+                    appState.currentGame = gameId;
+                    updateGameInfo();
+                    elements.numbersContainer.innerHTML = '';
+                    appState.drawnNumbers = [];
+                });
+            });
+
+            // Botão de sortear
+            elements.btnDraw.addEventListener('click', () => {
+                const numbers = generateNumbers();
+                displayNumbers(numbers);
+                saveToHistory(numbers);
+            });
+
+            // Botão de limpar
+            elements.btnClear.addEventListener('click', () => {
+                elements.numbersContainer.innerHTML = '';
+                appState.drawnNumbers = [];
+            });
+
+            // Botão de sorteio rápido
+            elements.btnQuickDraw.addEventListener('click', () => {
+                const numbers = generateNumbers();
+                displayNumbers(numbers);
+                saveToHistory(numbers);
+
+                // Mostrar mensagem de boa sorte
+                setTimeout(() => {
+                    showNotification('🍀 Boa sorte nos seus jogos!');
+                }, 1000);
+            });
+
+            // Botão de copiar números
+            elements.btnCopyNumbers.addEventListener('click', copyNumbersToClipboard);
+
+            // Botão de compartilhar no WhatsApp
+            elements.btnShareWhatsapp.addEventListener('click', shareOnWhatsApp);
+
+            // Sorteio com tecla de espaço
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !e.target.matches('button, input, textarea')) {
+                    e.preventDefault();
+                    const numbers = generateNumbers();
+                    displayNumbers(numbers);
+                    saveToHistory(numbers);
+                }
+            });
+        }
+
+        // Inicializar aplicação
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Sortear números automaticamente ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const numbers = generateNumbers();
+                displayNumbers(numbers);
+                saveToHistory(numbers);
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>
